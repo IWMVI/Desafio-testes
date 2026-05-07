@@ -12,7 +12,7 @@ Para o contrato completo e o **nome exato do método**, abra o **`BUG-00x.md`** 
 
 | ID | Regra/contrato | Resumo | Classe/métodos de teste |
 | --- | --- | --- | --- |
-| [BUG-001](BUG-001.md) | menor não pode receita → **400** | retorna **500** em vez de **400** | `TransacoesControllerTests` |
+| [BUG-001](BUG-001.md) | menor não pode registrar receita → **400**, sem gravar receita no menor | pode responder **201** ou **500** ou persistir receita para o menor | `TransacoesControllerTests` (`Receita_para_menor_*`) |
 | [BUG-002](BUG-002.md) | resposta POST com **`data`** | data ausente ou incorreta | `TransacoesControllerTests` |
 | [BUG-003](BUG-003.md) | totais depois da nova transação | totais defasados ou atrasados | `TotaisControllerTests` |
 | [BUG-004](BUG-004.md) | DELETE pessoa inexistente → **404** | retorna **204** ou sucesso parecido | `PessoasControllerTests` |
@@ -26,7 +26,7 @@ Para o contrato completo e o **nome exato do método**, abra o **`BUG-00x.md`** 
   `dotnet test tests/api/MinhasFinancas.Tests.Integration/MinhasFinancas.Tests.Integration.csproj`
 - Na pasta `tests/api`:  
   `dotnet test MinhasFinancas.Tests.Integration`
-- Web: `npm --prefix tests/web run test`
-- E2E sem dependência de API: `npm --prefix tests/e2e run test:sem-api`
-- E2E com `@RequerApi`: `npm --prefix tests/e2e run test:com-api`
-- Todas as camadas (raiz): `npm test`
+- Web — **npm**: `npm --prefix tests/web run test`; **Bun** (na raiz): `bun run test:web:bun`
+- E2E sem dependência de API — **npm**: `npm --prefix tests/e2e run test:sem-api`; **Bun**: `bun run test:e2e:sem-api:bun`
+- E2E com `@RequerApi` — **npm**: `npm --prefix tests/e2e run test:com-api`; **Bun**: `bun run test:e2e:com-api:bun`
+- Todas as camadas na raiz — **npm**: `npm test`; **Bun**: `bun run test:bun`

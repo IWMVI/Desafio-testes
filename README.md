@@ -44,7 +44,7 @@ A pirâmide vai do que é **mais amplo e rápido** (embaixo) ao que é **mais es
 | **Web**           | `tests/web/`                                   | Componentes, hooks, schemas (MSW) |
 | **E2E**           | `tests/e2e/`                                   | Fluxos críticos no browser contra app + API quando aplicável |
 
-Comandos por camada: `npm run test:unit`, `npm run test:integration`, `npm run test:web`, `npm run test:e2e`.
+Comandos por camada (**npm**): `npm run test:unit`, `npm run test:integration`, `npm run test:web`, `npm run test:e2e`. Com **Bun**: `bun run test:unit`, `bun run test:integration`, `bun run test:web:bun`, `bun run test:e2e:bun` (equivalem aos de cima usando `tests/web` e `tests/e2e` com Bun).
 
 ## Estrutura dos testes (convenção)
 
@@ -64,9 +64,11 @@ Comandos por camada: `npm run test:unit`, `npm run test:integration`, `npm run t
 
 ```bash
 npm run install:all
+# ou com Bun:
+bun run install:all:bun
 ```
 
-Por camada:
+Por camada (npm):
 
 ```bash
 npm run test:unit
@@ -75,21 +77,33 @@ npm run test:web
 npm run test:e2e
 ```
 
+Com Bun (equivale aos comandos npm acima onde há `npm --prefix`):
+
+```bash
+bun run test:unit
+bun run test:integration
+bun run test:web:bun
+bun run test:e2e:bun
+```
+
 **E2E:**
 
-- `npm run test:e2e` executa todos os cenários (incluindo **`@RequerApi`**)  
-- `npm run test:e2e:sem-api` executa apenas cenários que não dependem de API  
-- `npm run test:e2e:com-api` executa apenas cenários com **`@RequerApi`** no título  
+- `npm run test:e2e` / **`bun run test:e2e:bun`** — todos os cenários (incluindo **`@RequerApi`**)
+- `npm run test:e2e:sem-api` / **`bun run test:e2e:sem-api:bun`** — apenas sem dependência de API
+- `npm run test:e2e:com-api` / **`bun run test:e2e:com-api:bun`** — apenas cenários com **`@RequerApi`** no título  
+- `npm run test:e2e:ui` / **`bun run test:e2e:ui:bun`** — modo UI (sem **`@RequerApi`** nos cenários iniciados assim)
 
-**Execução completa:**
+**Execução completa (todas as camadas com resumo):**
 
 ```bash
 npm test
+# ou:
+bun run test:bun
 ```
 
-Os comandos padrão (**`test:integration`**, **`test:web`**, **`test:e2e`** e **`test`**) executam suites mistas, mostrando no mesmo relatório os testes que passaram e os que falharam.
+Os comandos **`test`**, **`test:integration`** e **`test:e2e`** (e variantes `:bun`) executam suites com relatório próprio por ferramenta; **`npm test`** / **`bun run test:bun`** orquestra as camadas com `scripts/run-all-tests.mjs`.
 
-No **`npm test`**, todas as camadas são executadas até o fim (mesmo com falhas) e no final é exibido um resumo consolidado com a lista **por camada** dos **arquivos** de teste que falharam.
+No **`npm test`** ou **`bun run test:bun`**, todas as camadas são executadas até o fim (mesmo com falhas) e no final é exibido um resumo consolidado com a lista **por camada** dos **arquivos** de teste que falharam.
 
 ## Bugs encontrados
 
@@ -109,6 +123,6 @@ Cada cenário está em `documentacao/bugs`:
 - Validar regras de negócio com nomes de teste orientados a comportamento.  
 - Manter falhas conhecidas na mesma execução dos demais testes para reduzir complexidade operacional e simplificar leitura da suite.  
 
-## CI (opcional)
+## CI
 
-O fluxo em [`.github/workflows/tests.yml`](.github/workflows/tests.yml) executa unitários, integração, web e E2E.
+O fluxo em [`.github/workflows/tests.yml`](.github/workflows/tests.yml) só dispara comandos de teste: **`dotnet test`** nos projetos de unitários e integração, **`npm run test`** (Vitest) em `tests/web`, e **`playwright test`** apenas nos cenários **sem** marca **`@RequerApi`** (sem subir API .NET nem `dotnet build` da aplicação no runner). Para E2E com API real use os scripts **`test:e2e:com-api`** localmente quando `api/` e `web/` estiverem disponíveis.
