@@ -1,0 +1,23 @@
+{
+  "name": "exame-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Suite de testes (xUnit + Vitest + Playwright) para o sistema MinhasFinancas",
+  "scripts": {
+    "test": "node scripts/run-all-tests.mjs npm:test:unit npm:test:integration:resumo npm:test:web:resumo npm:test:e2e:resumo",
+    "test:unit": "dotnet test tests/api/MinhasFinancas.Tests.Unit/MinhasFinancas.Tests.Unit.csproj --settings tests/api/console-test.runsettings",
+    "test:integration": "dotnet test tests/api/MinhasFinancas.Tests.Integration/MinhasFinancas.Tests.Integration.csproj --settings tests/api/console-test.runsettings",
+    "test:integration:resumo": "node scripts/dotnet-test-resumo.mjs tests/api/MinhasFinancas.Tests.Integration",
+    "test:api": "npm run test:unit && npm run test:integration",
+    "test:web": "npm --prefix tests/web run test",
+    "test:web:resumo": "node scripts/vitest-resumo.mjs --cwd tests/web run -c vitest.config.ts",
+    "test:e2e": "npm --prefix tests/e2e run test",
+    "test:e2e:resumo": "node scripts/playwright-resumo.mjs --cwd tests/e2e test",
+    "test:e2e:com-api": "npm --prefix tests/e2e run test:com-api",
+    "test:e2e:sem-api": "npm --prefix tests/e2e run test:sem-api",
+    "test:e2e:completo": "npm --prefix tests/e2e run test:completo",
+    "test:e2e:ui": "npm --prefix tests/e2e run test:ui",
+    "install:all": "npm install && npm --prefix tests/web install && npm --prefix tests/e2e install && npm --prefix tests/e2e run install:browsers-with-deps",
+    "install:all:bun": "bun install && bun install --cwd tests/web && bun install --cwd tests/e2e && bun run --cwd tests/e2e install:browsers-with-deps"
+  }
+}
