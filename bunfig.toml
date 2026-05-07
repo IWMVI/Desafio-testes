@@ -1,0 +1,7 @@
+[test]
+# Evita que `bun test` na raiz varra `tests/web` e `tests/e2e` (Vitest/Playwright não são testes Bun).
+# O ficheiro único abaixo apenas delega para `bun run test` (script do package.json).
+root = "scripts/bun-suite-entry"
+
+# Suite completa (dotnet + Vitest + Playwright) pode demorar muito mais que os 5000 ms padrão do Bun.
+timeout = 900000

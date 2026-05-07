@@ -4,7 +4,7 @@
   "private": true,
   "description": "Suite de testes (xUnit + Vitest + Playwright) para o sistema MinhasFinancas",
   "scripts": {
-    "test": "node scripts/run-all-tests.mjs npm:test:unit npm:test:integration:resumo npm:test:web:resumo npm:test:e2e:resumo",
+    "test": "node scripts/run-all-tests.mjs",
     "test:bun": "node scripts/run-all-tests.mjs bun:test:unit bun:test:integration:resumo bun:test:web:resumo bun:test:e2e:resumo",
     "test:unit": "dotnet test tests/api/MinhasFinancas.Tests.Unit/MinhasFinancas.Tests.Unit.csproj --settings tests/api/console-test.runsettings",
     "test:integration": "dotnet test tests/api/MinhasFinancas.Tests.Integration/MinhasFinancas.Tests.Integration.csproj --settings tests/api/console-test.runsettings",

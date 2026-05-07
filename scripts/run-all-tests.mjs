@@ -4,11 +4,72 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-const tokens = process.argv.slice(2);
-if (tokens.length === 0) {
-  console.error("Uso: node scripts/run-all-tests.mjs <npm|bun>:<script> ...");
-  process.exit(2);
+/** @type {readonly string[]} */
+const ScriptsPadraoOrquestracao = [
+  "test:unit",
+  "test:integration:resumo",
+  "test:web:resumo",
+  "test:e2e:resumo",
+];
+
+/**
+ * Com `npm test`: prefere `npm` nos passos filhos.
+ * Com `bun run test`: prefere `bun` nos passos filhos.
+ * Override: `TEST_RUNNER=bun|npm`.
+ */
+function detectarRunnerPreferido() {
+  const forçado = process.env.TEST_RUNNER;
+  if (forçado === "bun" || forçado === "npm") return forçado;
+
+  const ua = process.env.npm_config_user_agent ?? "";
+  if (/\bbun\//i.test(ua)) return "bun";
+
+  const execpath = process.env.npm_execpath ?? "";
+  if (
+    /[\\/]bun(\.exe)?$/i.test(execpath) ||
+    execpath.toLowerCase().includes("bun-vm")
+  ) {
+    return "bun";
+  }
+
+  const versãoBun = process.env.BUN_VERSION;
+  if (versãoBun !== undefined && versãoBun !== "") return "bun";
+
+  return "npm";
 }
+
+/** @returns {readonly string[]} */
+function resolverTokens() {
+  const bruto = process.argv.slice(2);
+  if (bruto.length === 0) {
+    const runner = detectarRunnerPreferido();
+    return ScriptsPadraoOrquestracao.map((s) => `${runner}:${s}`);
+  }
+
+  let inválidos = false;
+  for (const t of bruto) {
+    const pos = t.indexOf(":");
+    if (pos <= 0) {
+      console.error(`Token inválido: ${t} (esperado npm:script ou bun:script)`);
+      inválidos = true;
+    } else {
+      const runner = t.slice(0, pos);
+      if (runner !== "npm" && runner !== "bun") {
+        console.error(`Runner desconhecido em ${t} (use npm ou bun)`);
+        inválidos = true;
+      }
+    }
+  }
+  if (inválidos) {
+    console.error(
+      `\nOu omita todos os tokens para usar scripts padrão com o mesmo runner que iniciou (${detectarRunnerPreferido()}).`,
+    );
+    process.exit(2);
+  }
+  return bruto;
+}
+
+const tokens = resolverTokens();
 
 const arquivoResumo = path.join(
   fs.mkdtempSync(path.join(os.tmpdir(), "resumo-testes-")),
@@ -51,6 +112,16 @@ for (const token of tokens) {
     falhou = true;
     falhasPorScript.set(`${runner} run ${script}`, lerArquivosFalhos(arquivoResumo));
     fs.writeFileSync(arquivoResumo, "", { encoding: "utf8" });
+    const parar = process.env.TEST_ORCHESTRATOR_BAIL_FIRST === "1";
+    if (parar) {
+      console.error(
+        "\n(Parando: TEST_ORCHESTRATOR_BAIL_FIRST=1. Sem isto o orquestrador continua com os próximos passos.)\n",
+      );
+      break;
+    }
+    console.error(
+      "\n(Continuando com os passos seguintes mesmo com falha; o código final ainda será ≠0.)\n",
+    );
   }
 }
 
