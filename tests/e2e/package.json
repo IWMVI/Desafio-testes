@@ -1,0 +1,18 @@
+{
+  "name": "minhas-financas-tests-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "playwright install chromium firefox",
+    "install:browsers-with-deps": "playwright install chromium firefox --with-deps",
+    "test": "playwright test",
+    "test:sem-api": "playwright test --grep-invert @RequerApi",
+    "test:com-api": "playwright test --grep @RequerApi",
+    "test:completo": "playwright test",
+    "test:ui": "playwright test --ui --grep-invert @RequerApi"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1"
+  }
+}
