@@ -15,10 +15,36 @@ Este repositório contém **somente os testes automatizados** e a documentação
 
 ## Pirâmide de testes
 
-- **Unitários (.NET/xUnit)**: regras de domínio e serviços, com foco em lógica de negócio.  
-- **Integração (.NET/xUnit + WebApplicationFactory + SQLite em memória)**: contratos HTTP, serialização e persistência.  
-- **Web (Vitest + Testing Library + MSW)**: formulários, schemas Zod e hooks React Query.  
-- **E2E (Playwright)**: fluxos críticos de ponta a ponta.  
+A pirâmide vai do que é **mais amplo e rápido** (embaixo) ao que é **mais estreito e caro** (em cima). Cada nível lista **onde está no repo** e **qual ferramenta** roda aquele nível:
+
+```
+                                     ┌─────────────────────────────┐
+                                     │           E2E               │
+                                     │  Playwright · tests/e2e     │
+                                     └──────────────┬──────────────┘
+                        ┌───────────────────────────┴─────────────────────────┐
+                        │                  Web                                │
+                        │ Vitest · tests/web (Testing Library, MSW, Zod…)     │
+                        └───────────────────────────┬─────────────────────────┘
+                      ┌─────────────────────────────┴─────────────────────────────┐
+                      │                    Integração .NET                        │
+                      │ WebApplicationFactory + SQLite · tests/api/…Integration   │
+                      └─────────────────────────────┬─────────────────────────────┘
+     ┌──────────────────────────────────────────────┴──────────────────────────────────────────────┐
+     │                                  Unitários .NET                                             │
+     │                        xUnit · tests/api/MinhasFinancas.Tests.Unit                          │
+     │              (pastas Domain, Service, Dto — regras e serviços isolados quando possível)     │
+     └─────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Nível             | Pasta / projeto principal                      | Função típica |
+| ----------------- | ---------------------------------------------- | ------------- |
+| **Unitários**     | `tests/api/MinhasFinancas.Tests.Unit/`         | Regras de domínio, DTOs, serviços |
+| **Integração**    | `tests/api/MinhasFinancas.Tests.Integration/`  | Contrato HTTP, serialização, persistência em memória |
+| **Web**           | `tests/web/`                                   | Componentes, hooks, schemas (MSW) |
+| **E2E**           | `tests/e2e/`                                   | Fluxos críticos no browser contra app + API quando aplicável |
+
+Comandos por camada: `npm run test:unit`, `npm run test:integration`, `npm run test:web`, `npm run test:e2e`.
 
 ## Estrutura dos testes (convenção)
 
