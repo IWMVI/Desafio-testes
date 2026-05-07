@@ -2,16 +2,17 @@
 
 Este repositório contém **somente os testes automatizados** e a documentação dos bugs encontrados.
 
-## Escopo coberto
+## Escopo coberto (testes automatizados deste repositório)
 
-- CRUD de pessoas  
-- CRUD de categorias  
-- CRUD de transações  
-- Consulta de totais por pessoa  
-- Regras de negócio prioritárias:  
-  - menor de idade não pode ter receita  
-  - categoria deve respeitar finalidade (receita/despesa/ambas)  
-  - exclusão em cascata das transações ao excluir pessoa  
+A suíte **.NET de integração** em `tests/api/MinhasFinancas.Tests.Integration` cobre **somente** estas regras de negócio:
+
+- menor de idade não pode registar receita  
+- categoria só pode ser usada conforme a finalidade (receita / despesa / ambas)  
+- exclusão em cascata das transações ao excluir uma pessoa  
+
+Os testes **unitários .NET** mantidos apoiam domínio relacionado: `Categoria.PermiteTipo` e `Pessoa.EhMaiorDeIdade`.
+
+As camadas **web** e **E2E** permanecem em `tests/web` e `tests/e2e` (fora do escopo estrito acima, salvo se forem desativados ou ajustados por separado).
 
 ## Pirâmide de testes
 
@@ -32,14 +33,13 @@ A pirâmide vai do que é **mais amplo e rápido** (embaixo) ao que é **mais es
                       └─────────────────────────────┬─────────────────────────────┘
      ┌──────────────────────────────────────────────┴──────────────────────────────────────────────┐
      │                                  Unitários .NET                                             │
-     │                        xUnit · tests/api/MinhasFinancas.Tests.Unit                          │
-     │              (pastas Domain, Service, Dto — regras e serviços isolados quando possível)     │
+     │   xUnit · tests/api/MinhasFinancas.Tests.Unit — domínio (finalidade de categoria, maioridade) │
      └─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Nível             | Pasta / projeto principal                      | Função típica |
 | ----------------- | ---------------------------------------------- | ------------- |
-| **Unitários**     | `tests/api/MinhasFinancas.Tests.Unit/`         | Regras de domínio, DTOs, serviços |
+| **Unitários**     | `tests/api/MinhasFinancas.Tests.Unit/`         | Regras de domínio alinhadas às três regras de negócio (categoria / maioridade) |
 | **Integração**    | `tests/api/MinhasFinancas.Tests.Integration/`  | Contrato HTTP, serialização, persistência em memória |
 | **Web**           | `tests/web/`                                   | Componentes, hooks, schemas (MSW) |
 | **E2E**           | `tests/e2e/`                                   | Fluxos críticos no browser contra app + API quando aplicável |
@@ -48,17 +48,19 @@ Comandos por camada (**npm**): `npm run test:unit`, `npm run test:integration`, 
 
 ## Estrutura dos testes (convenção)
 
-- **API** (`tests/api/...`): pastas **`Controller`**, **`Service`**, **`Dto`**, **`Domain`**, alinhadas ao backend (traits **`Tipo`** e **`Camada`**).  
+- **API** (`tests/api/...`): **`Controller`** na integração (regras acima); **`Domain`** nos unitários (traits **`Tipo`** e **`Camada`**).  
 - **Web** (`tests/web`): **`Dto`** (schemas Zod), **`Hook`** (React Query), **`Component`** (Testing Library); também **`msw`** e **`suporte`**.  
 - **E2E** (`tests/e2e/specs`): **`Ui`** (navegação/layout) e **`Fluxo`** (CRUD e jornadas); cenários que dependem da API real mantêm **`@RequerApi`** no título para os scripts filtrarem.  
 
 ## Como executar
 
+**Observação (Bun):** dependendo do ambiente (versão do Bun, SO, integração com Node), o Bun pode **não** reproduzir exatamente o mesmo comportamento que o npm em todos os scripts (sobretudo na orquestração da suíte e em subpastas). **Prefira usar o npm** como referência; os comandos equivalentes com Bun existem por conveniência, mas são secundários.
+
 **Pré-requisitos:**
 
 - Node 22+  
 - .NET 9 SDK  
-- npm (ou Bun)  
+- npm (Bun opcional; ver observação acima)  
 
 **Instalação:**
 
