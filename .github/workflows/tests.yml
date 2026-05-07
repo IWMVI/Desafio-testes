@@ -1,0 +1,83 @@
+name: Testes
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  dotnet-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Restaurar e testar (unitário)
+        run: |
+          dotnet restore tests/api/MinhasFinancas.Tests.sln
+          dotnet test tests/api/MinhasFinancas.Tests.Unit/MinhasFinancas.Tests.Unit.csproj --configuration Release --no-restore --settings tests/api/console-test.runsettings
+
+  dotnet-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Integração
+        run: |
+          dotnet restore tests/api/MinhasFinancas.Tests.sln
+          dotnet test tests/api/MinhasFinancas.Tests.Integration/MinhasFinancas.Tests.Integration.csproj --configuration Release --no-restore --settings tests/api/console-test.runsettings
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests/web/package-lock.json
+      - name: Vitest
+        working-directory: tests/web
+        run: |
+          npm ci
+          npm run test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build API
+        run: dotnet build api/MinhasFinancas.API/MinhasFinancas.API.csproj -c Release
+      - name: Iniciar API em segundo plano
+        run: |
+          dotnet run --project api/MinhasFinancas.API/MinhasFinancas.API.csproj -c Release --no-build --urls http://127.0.0.1:5055 &
+          for i in $(seq 1 40); do
+            if curl -fsS "http://127.0.0.1:5055/api/v1.0/pessoas?page=1&pageSize=1" >/dev/null; then
+              echo "API pronta"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Tempo limite: API não respondeu a tempo"
+          exit 1
+      - name: Instalar dependências web + e2e
+        run: |
+          npm ci --prefix web
+          npm ci --prefix tests/e2e
+      - name: Playwright (Chromium)
+        working-directory: tests/e2e
+        env:
+          VITE_API_URL: http://127.0.0.1:5055/api/v1.0
+        run: |
+          npx playwright install chromium --with-deps
+          npx playwright test --project=chromium
